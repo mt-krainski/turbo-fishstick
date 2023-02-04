@@ -2,16 +2,16 @@
     <head>
         <meta http-equiv="refresh" content="15" >
         <style>
-            h1 {text-align: center;}
+            h2 {text-align: center;}
             p {text-align: center;}
             div {text-align: center;}
             body {max-width: 500px; margin: auto; margin-top: 2em}
         </style>
     </head>
     <body>
-        <h1> 
+        <h2> 
             {{ stop_metadata.stop_name }} ({{ stop_metadata.stop_id }})
-        </h1>
+        </h2>
 
         {% if routes %}
             {% for route in routes %}
