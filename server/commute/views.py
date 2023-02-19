@@ -1,20 +1,35 @@
 from django.http import JsonResponse
 from django.shortcuts import render
+from rest_framework import serializers
 import requests
 
-from .settings import OC_TRANSPO, TRIP_VARIANTS_BY_NAME
+from .settings import OC_TRANSPO, TRIP_VARIANTS_BY_NAME, TRIP_VARIANTS
+
+
+class TripVariantSerializer(serializers.Serializer):
+    trip_variant = serializers.ChoiceField(
+        [(trip["name"], trip["stop_name"]) for trip in TRIP_VARIANTS]
+    )
 
 
 def index(request):
-    context = get_route_summary(request.GET["trip_variant"])
+    serializer = TripVariantSerializer(request.GET)
+    context = _route_summary(serializer.data["trip_variant"])
     return render(request, "commute/index.html", context)
 
 
-def get_route_summary(trip_variant):
-    trip_details = TRIP_VARIANTS_BY_NAME[trip_variant]
-    url = "https://api.octranspo1.com/v2.0/GetNextTripsForStopAllRoutes"
+def get_route_summary(request):
+    serializer = TripVariantSerializer(request.GET)
+    route_summary = _route_summary(serializer.data["trip_variant"])
+    return JsonResponse(route_summary)
 
-    # ?appID={appID}&apiKey={apiKey}&stopNo={stopNo}&format={format}"
+
+def _route_summary(trip_variant):
+    trip_details = TRIP_VARIANTS_BY_NAME[trip_variant]
+
+    # Request based on
+    # https://www.octranspo.com/en/plan-your-trip/travel-tools/developers/dev-doc
+    url = "https://api.octranspo1.com/v2.0/GetNextTripsForStopAllRoutes"
     oc_transpo_data = requests.get(
         url,
         params={

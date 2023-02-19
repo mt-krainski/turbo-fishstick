@@ -17,7 +17,10 @@
             {% for route in routes %}
                 <p> {{ route.route_number }} / {{ route.heading }} </p>
                 {% for trip in route.trips %}
-                    <div> {{ trip.start }}, in {{ trip.departure_in }} min. {% if trip.adjusted %} * {% endif %} </div>
+                    <div> {% if trip.start %}{{ trip.start }}, {% endif %}
+                        in {{ trip.departure_in }} min. 
+                        {% if trip.adjusted %} * {% endif %}
+                    </div>
                     <br>
                 {% endfor %}
                 <br>
