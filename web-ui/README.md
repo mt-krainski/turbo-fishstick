@@ -66,3 +66,22 @@ npm run test:e2e
 ```sh
 npm run lint
 ```
+
+# TODOs
+
+- I changed the `tsconfig.json` file from the one provided by gts to a vue-like one. There might be some errors resulting from this. Here's the original tsconfig.json file
+
+```json
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "build",
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}
+```

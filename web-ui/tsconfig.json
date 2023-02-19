@@ -1,12 +1,21 @@
 {
-  "extends": "./node_modules/gts/tsconfig-google.json",
+  "extends": "@vue/tsconfig/tsconfig.node.json",
+  "include": [
+    "vite.config.*",
+    "vitest.config.*",
+    "cypress.config.*",
+    "playwright.config.*",
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ],
   "compilerOptions": {
     "rootDir": ".",
+    "composite": true,
     "outDir": "build",
     "target": "ESNext",
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "types": ["vite/client"]
-  },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+    "moduleResolution": "Node",
+    "types": ["vite/client", "node"]
+    
+  }
 }
