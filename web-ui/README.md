@@ -69,4 +69,5 @@ npm run lint
 
 # TODOs
 
+- update readme
 - fix tests
