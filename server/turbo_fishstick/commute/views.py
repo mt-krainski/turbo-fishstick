@@ -47,22 +47,31 @@ def _route_summary(trip_variant):
 
     stop_metadata["stop_id"] = stop_trips["StopNo"]
     stop_metadata["stop_name"] = stop_trips["StopDescription"]
-    routes = [
-        {
-            "route_number": route["RouteNo"],
-            "heading": route["RouteHeading"],
-            "trips": [
-                {
-                    "start": trip["TripStartTime"],
-                    "departure_in": trip["AdjustedScheduleTime"],
-                    "last_adjusted": trip["AdjustmentAge"],
-                    "adjusted": trip["AdjustmentAge"] != "-1",
-                }
-                for trip in route["Trips"]
-            ],
-        }
-        for route in stop_trips["Routes"]["Route"]
-    ]
+
+    if not isinstance(stop_trips["Routes"]["Route"], list):
+        stop_trips["Routes"]["Route"] = [stop_trips["Routes"]["Route"]]
+
+    routes = []
+
+    for route in stop_trips["Routes"]["Route"]:
+        if not isinstance(route["Trips"], list):
+            route["Trips"] = [route["Trips"]]
+
+        routes.append(
+            {
+                "route_number": route["RouteNo"],
+                "heading": route["RouteHeading"],
+                "trips": [
+                    {
+                        "start": trip["TripStartTime"],
+                        "departure_in": trip["AdjustedScheduleTime"],
+                        "last_adjusted": trip["AdjustmentAge"],
+                        "adjusted": trip["AdjustmentAge"] != "-1",
+                    }
+                    for trip in route["Trips"]
+                ],
+            }
+        )
 
     context = {"stop_metadata": stop_metadata, "routes": routes}
 

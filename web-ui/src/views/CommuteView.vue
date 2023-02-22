@@ -2,32 +2,11 @@
 import { onMounted, ref } from 'vue';
 import axios from 'axios';
 
+import type { RouteSummary } from '../types/commute-types';
+
 const routeSummary = ref<any>();
 const routeRefreshInterval = 15000;
-const loading = ref<boolean>(false);
-
-type Trip = {
-  start: string;
-  departure_in: string;
-  last_adjusted: string;
-  adjusted: boolean;
-};
-
-type Route = {
-  route_number: string;
-  heading: string;
-  trips: Trip[];
-};
-
-type Stop = {
-  stop_id: string;
-  stop_name: string;
-};
-
-type RouteSummary = {
-  stop_metadata: Stop;
-  routes: Route[];
-};
+const firstTimeLoaded = ref<boolean>(false);
 
 function reformatRoutes(
   routes: RouteSummary
@@ -58,7 +37,6 @@ function reformatRoutes(
 }
 
 async function refreshRoute() {
-  loading.value = true;
   const routeSummaryResponse = await axios.get(
     'http://localhost:8000/commute/route_summary',
     {
@@ -70,7 +48,7 @@ async function refreshRoute() {
   routeSummary.value = reformatRoutes(
     routeSummaryResponse.data as RouteSummary
   );
-  loading.value = false;
+  firstTimeLoaded.value = true;
 }
 
 setInterval(refreshRoute, routeRefreshInterval);
@@ -86,12 +64,11 @@ onMounted(() => {
       <p class="text-center pa-3">
         <v-icon icon="mdi-bus" />
       </p>
-      <div v-if="loading">
+      <div v-if="!firstTimeLoaded">
         <p class="text-center pa-10">
           <v-progress-circular
             indeterminate
-            model-value="20"
-            :size="79"
+            :size="80"
             :width="10"
           ></v-progress-circular>
         </p>
