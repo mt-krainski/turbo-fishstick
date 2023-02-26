@@ -18,5 +18,5 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("commute/", include("commute.urls")),
+    path("api/commute/", include("commute.urls")),
 ]

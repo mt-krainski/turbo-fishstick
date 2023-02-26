@@ -8,6 +8,9 @@ const routeSummary = ref<any>();
 const routeRefreshInterval = 15000;
 const firstTimeLoaded = ref<boolean>(false);
 
+// TODO: make this an env variable
+const serverPath = '';
+
 function reformatRoutes(
   routes: RouteSummary
 ): { type?: string; title?: string; value?: number }[] {
@@ -38,7 +41,7 @@ function reformatRoutes(
 
 async function refreshRoute() {
   const routeSummaryResponse = await axios.get(
-    'http://localhost:8000/commute/route_summary',
+    `${serverPath}/api/commute/route_summary`,
     {
       params: {
         trip_variant: 'home',

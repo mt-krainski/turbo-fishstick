@@ -30,7 +30,7 @@ SECRET_KEY = os.environ["TURBO_FISHSTICK_SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # SECURITY WARNING: don't allow all origins on production
 CORS_ALLOW_ALL_ORIGINS = True
