@@ -13,6 +13,7 @@ TURBO_FISHSTICK_SECRET_KEY=...
 # TODOs
 
 - prepare a deployment version of the django app - using uwsgi
+- fix django admin styles when deployed
 - fix server path in CommuteView.vue
 - add readme
 - add lint rules

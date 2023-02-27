@@ -1,3 +1,4 @@
 from django.contrib import admin
+from .models import TripVariant
 
-# Register your models here.
+admin.site.register(TripVariant)

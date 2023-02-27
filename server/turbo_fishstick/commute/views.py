@@ -1,14 +1,15 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.shortcuts import render
 from rest_framework import serializers
 import requests
 
-from .settings import OC_TRANSPO, TRIP_VARIANTS_BY_NAME, TRIP_VARIANTS
+from .models import TripVariant
+from .settings import OC_TRANSPO
 
 
 class TripVariantSerializer(serializers.Serializer):
     trip_variant = serializers.ChoiceField(
-        [(trip["name"], trip["stop_name"]) for trip in TRIP_VARIANTS]
+        [(trip.name, trip.stop_name) for trip in TripVariant.objects.all()]
     )
 
 
@@ -25,7 +26,10 @@ def get_route_summary(request):
 
 
 def _route_summary(trip_variant):
-    trip_details = TRIP_VARIANTS_BY_NAME[trip_variant]
+    try:
+        trip_details = TripVariant.objects.get(name=trip_variant)
+    except TripVariant.DoesNotExist:
+        raise Http404("Trip variant does not exist")
 
     # Request based on
     # https://www.octranspo.com/en/plan-your-trip/travel-tools/developers/dev-doc
@@ -35,7 +39,7 @@ def _route_summary(trip_variant):
         params={
             "appID": OC_TRANSPO["app_id"],
             "apiKey": OC_TRANSPO["api_key"],
-            "stopNo": trip_details["stop_id"],
+            "stopNo": trip_details.stop_id,
             "format": OC_TRANSPO["format"],
         },
     )
