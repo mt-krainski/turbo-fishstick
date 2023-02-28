@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+cd ..
 cd web-ui
 npm run build
 cd ..
