@@ -2,5 +2,6 @@
 
 nginx
 
+poetry run ./turbo_fishstick/manage.py collectstatic
 poetry run ./turbo_fishstick/manage.py migrate
-poetry run ./turbo_fishstick/manage.py runserver 0.0.0.0:8000
+poetry run uwsgi --ini uwsgi.ini
