@@ -14,7 +14,7 @@ ENV PATH "$HOME/.local/bin:$PATH"
 
 COPY ./server/pyproject.toml ./
 COPY ./server/poetry.lock ./
-RUN poetry install --no-root
+RUN poetry install --no-root --without dev
 
 ## Start copying code
 COPY nginx/nginx.conf /etc/nginx/
