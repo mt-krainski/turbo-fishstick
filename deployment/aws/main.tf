@@ -7,57 +7,116 @@ terraform {
 }
 
 provider "aws" {
-  profile = "PowerUserAccess-134105768696"
-  region  = "us-east-1"
+  profile = "PowerUser"
+  region  = var.region
 }
 
-resource "aws_vpc" "my_vpc" {
-  cidr_block = "172.31.0.0/16"
+resource "aws_vpc" "vpc" {
+  cidr_block           = var.cidr_vpc
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 
   tags = {
     Name = "tf-example"
+    Env  = var.environment_tag
   }
 }
 
-resource "aws_subnet" "my_subnet" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "172.31.10.0/24"
-  availability_zone = "us-east-1a"
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.vpc.id
+  tags = {
+    Env = var.environment_tag
+  }
+}
+
+resource "aws_subnet" "subnet_public" {
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = var.cidr_subnet
+  map_public_ip_on_launch = "true"
+  availability_zone       = var.availability_zone
 
   tags = {
     Name = "tf-example"
+    Env  = var.environment_tag
   }
 }
 
-resource "aws_network_interface" "foo" {
-  subnet_id   = aws_subnet.my_subnet.id
-  private_ips = ["172.31.10.100"]
-
+resource "aws_route_table" "rtb_public" {
+  vpc_id = aws_vpc.vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
   tags = {
-    Name = "primary_network_interface"
+    Env = var.environment_tag
   }
 }
 
-resource "aws_instance" "test-terraform" {
-  ami           = var.ami
-  instance_type = var.instance_type
+resource "aws_route_table_association" "rta_subnet_public" {
+  subnet_id      = aws_subnet.subnet_public.id
+  route_table_id = aws_route_table.rtb_public.id
+}
 
-  network_interface {
-    network_interface_id = aws_network_interface.foo.id
-    device_index         = 0
+resource "aws_security_group" "sg_default" {
+  name   = "sg_default"
+  vpc_id = aws_vpc.vpc.id
+  ingress {
+    description = "ssh"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    # Restrict SSH access to only necessary IPs and ports.
+    # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
+    cidr_blocks = ["${chomp(data.http.local_ip.response_body)}/32"]
   }
-
-  credit_specification {
-    cpu_credits = "unlimited"
+  ingress {
+    description = "http"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "https"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    description = "open internet"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+  timeouts {
+    delete = "2m"
+  }
+  tags = {
+    Env = var.environment_tag
   }
 }
 
-variable "ami" {
-  type    = string
-  default = "ami-006dcf34c09e50022"
+resource "aws_key_pair" "ec2key" {
+  key_name   = "publicKey"
+  public_key = file(var.public_key_path)
 }
 
-variable "instance_type" {
-  type    = string
-  default = "t2.micro"
+resource "aws_instance" "test_instance" {
+  ami                    = var.instance_ami
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.subnet_public.id
+  vpc_security_group_ids = ["${aws_security_group.sg_default.id}"]
+  key_name               = aws_key_pair.ec2key.key_name
+  tags = {
+    Env = var.environment_tag
+  }
+}
+
+output "ec2_global_ips" {
+  value = [aws_instance.test_instance.*.public_ip]
 }
